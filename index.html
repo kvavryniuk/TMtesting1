@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Смайлик: Тест Нейромережі</title>
     <style>
-        /* Основні стилі та фон */
+        /* ... (Ваші неонові CSS стилі) ... */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0d0d1a; /* Темний, майже чорний фон */
-            color: #e0e0f0; /* Світло-сірий текст */
+            background-color: #0d0d1a;
+            color: #e0e0f0;
             margin: 0;
             padding: 20px;
             text-align: center;
@@ -19,27 +19,24 @@
             min-height: 100vh;
         }
 
-        /* Стиль для заголовка */
         h1 {
-            color: #00ffcc; /* Неоновий блакитний */
+            color: #00ffcc;
             text-transform: uppercase;
             letter-spacing: 3px;
-            text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ccff; /* Неоновий ефект */
+            text-shadow: 0 0 10px #00ffcc, 0 0 20px #00ccff;
             margin-bottom: 5px;
         }
         
-        /* Стиль для підзаголовка */
         h2 {
-            color: #ff66ff; /* Неоновий рожевий */
+            color: #ff66ff;
             font-size: 1.2em;
             margin-bottom: 30px;
         }
 
-        /* Контейнер для моделі AI та результатів */
         .ai-container {
-            background-color: rgba(255, 255, 255, 0.05); /* Напівпрозорий фон */
+            background-color: rgba(255, 255, 255, 0.05);
             border: 2px solid #00ffcc;
-            box-shadow: 0 0 15px #00ffcc, inset 0 0 15px #00ffcc; /* Рамка з неоновим світінням */
+            box-shadow: 0 0 15px #00ffcc, inset 0 0 15px #00ffcc;
             padding: 20px;
             border-radius: 10px;
             max-width: 600px;
@@ -47,21 +44,19 @@
             margin: 20px 0;
         }
 
-        /* Стиль для результату розпізнавання */
         #label-container {
             font-size: 1.5em;
             margin-top: 20px;
             font-weight: bold;
             min-height: 50px;
-            color: #ff66ff; /* Рожевий для результатів */
+            color: #ff66ff;
             text-shadow: 0 0 5px #ff66ff;
         }
 
-        /* Стиль для інструкцій */
         .instructions {
             margin-top: 30px;
             padding: 15px;
-            background-color: rgba(255, 102, 255, 0.1); /* Легкий рожевий фон для інфо */
+            background-color: rgba(255, 102, 255, 0.1);
             border-left: 5px solid #ff66ff;
             text-align: left;
             font-size: 1.1em;
@@ -73,7 +68,6 @@
             color: #00ffcc;
         }
         
-        /* Стиль для кнопок (якщо потрібні) */
         button {
             background-color: #00ffcc;
             color: #0d0d1a;
@@ -92,33 +86,36 @@
             box-shadow: 0 0 10px #00ffcc;
         }
 
-        /* Стиль для вікна з відеопотоком */
+        /* Додаємо невеликий Canvas для відображення чорно-білого 48x48 прев'ю (опціонально) */
+        #previewCanvas {
+            border: 1px solid red; /* Для візуального контролю */
+            margin-bottom: 15px;
+        }
+
         #webcam-container {
-            border: 3px solid #ff66ff; /* Рамка для веб-камери */
+            border: 3px solid #ff66ff;
             border-radius: 5px;
             box-shadow: 0 0 10px #ff66ff;
             overflow: hidden;
             margin: 10px 0;
+            /* Це основний Canvas, де відображається кольоровий потік */
         }
     </style>
 </head>
 <body>
 
     <h1>🧠 AI-Смайлик: Тест Нейромережі</h1>
-    <h2>Освітня програма "Штучний інтелект та аналіз масивів даних"</h2>
+    <h2>Спеціальність "Штучний інтелект та аналіз масивів даних"</h2>
 
     <div class="instructions">
         <p><strong>Інструкція:</strong> Спробуй "зламати" нашу ML-модель!</p>
-        <p>1. Натисни "Старт" (якщо з'явиться кнопка).</p>
-        <p>2. Покажи камері один із трьох станів, на яких навчали AI:</p>
-        <p>— Радість 🥳</p>
-        <p>— Втома 😴</p>
-        <p>— Здивування 🧐</p>
-        <p>AI миттєво визначить твій стан та пояснить, як це пов'язано з навчанням!</p>
-        <p><i></br>Після натиску кнопки старт потрібно зачекати хвилинку для завантаження моделі</i></p>
+        <p>1. Натисни **"Старт"**.</p>
+        <p>2. Покажи камері один із трьох станів (Радість, Втома, Здивування).</p>
+        <p>3. Зображення буде конвертовано до 48x48 (як у датасеті!) і передано AI.</p>
     </div>
 
     <div class="ai-container">
+        <canvas id="previewCanvas" width="48" height="48" style="display: none;"></canvas>
         <div id="webcam-container"></div>
         <button type="button" onclick="init()">Старт Тесту</button>
         <div id="label-container">Чекаю на твій вираз обличчя...</div>
@@ -128,18 +125,17 @@
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
     
     <script type="text/javascript">
+        // 1. ВАШІ ЗНАЧЕННЯ:
+        const URL = "https://teachablemachine.withgoogle.com/models/YOUR_MODEL_ID/"; // <- ВСТАВТЕ ВАШЕ ПОСИЛАННЯ
+        const SIZE = 48; // Новий розмір 48x48
         
-        const URL = "https://teachablemachine.withgoogle.com/models/z3zsw6Tr8/"; 
-        const SIZE = 48;
-
         let model, webcam, labelContainer, maxPredictions;
         let previewCanvas, previewCtx;
-        
+
         async function init() {
             const modelURL = URL + "model.json";
             const metadataURL = URL + "metadata.json";
 
-            // Завантаження моделі
             model = await tmImage.load(modelURL, metadataURL);
             maxPredictions = model.getTotalClasses();
 
@@ -163,12 +159,16 @@
         }
 
         async function loop() {
+            webcam.update(); // Оновлення кадру вебкамери
+            
+            // Ключова функція: перетворення зображення
             const processedImage = await preprocessImage(webcam.canvas);
-            await predict();
+
+            await predict(processedImage);
             window.requestAnimationFrame(loop);
         }
 
-        // 2. ФУНКЦІЯ ДЛЯ ВІДОБРАЖЕННЯ РЕЗУЛЬТАТУ ТА ПОЯСНЕННЯ ЗВ'ЯЗКУ З ОП
+        // ---------- НОВА КЛЮЧОВА ФУНКЦІЯ: Обробка Зображення ----------
         async function preprocessImage(sourceCanvas) {
             // 1. Малюємо кадр з вебкамери на маленький Canvas (48x48)
             previewCtx.drawImage(sourceCanvas, 0, 0, SIZE, SIZE);
@@ -209,24 +209,23 @@
                     highestProb = prediction[i].probability.toFixed(2);
                     const classPrediction = prediction[i].className;
 
-                    // Логіка для зв'язку з ОП
-                    if (highestProb > 0.7) { // Якщо ймовірність висока (0.7 = 70%)
+                    if (highestProb > 0.7) { 
                         if (classPrediction.includes("Радість")) {
-                            resultHTML = `🥳 ${classPrediction}! Ймовірність: ${Math.round(highestProb * 100)}%<br>SUCCESS! ML-модель розпізнала: Ти ЩАСЛИВИЙ! Це називається Обробка Зображень. На ОП навчимо AI "бачити"!`;
+                            resultHTML = `🥳 **${classPrediction}**! Ймовірність: ${Math.round(highestProb * 100)}%<br>Це **Обробка Зображень**. На ОП навчимо AI "бачити" світ у 48x48!`;
                         } else if (classPrediction.includes("Втома")) {
-                            resultHTML = `😴 ${classPrediction}! Ймовірність: ${Math.round(highestProb * 100)}%<br>Модель розпізнала: Тобі потрібен Debug-Сон. Це називається Кластеризація Поведінки. На ОП навчимо аналізувати патерни!`;
+                            resultHTML = `😴 **${classPrediction}**! Ймовірність: ${Math.round(highestProb * 100)}%<br>Це **Кластеризація Поведінки**. На ОП навчимо аналізувати патерни!`;
                         } else if (classPrediction.includes("Здивування")) {
-                            resultHTML = `🧐 ${classPrediction}! Ймовірність: ${Math.round(highestProb * 100)}%<br>WOW! AI здивований! Це називається Classification Error! Ти кинув виклик нашій Нейромережі! На ОП навчимо покращувати точність!`;
+                            resultHTML = `🧐 **${classPrediction}**! Ймовірність: ${Math.round(highestProb * 100)}%<br>Ти кинув виклик нашій **Нейромережі**! На ОП навчимо покращувати точність!`;
                         } else {
-                            resultHTML = `${classPrediction}. Ймовірність: ${Math.round(highestProb * 100)}%`;
+                            resultHTML = `**${classPrediction}**. Ймовірність: ${Math.round(highestProb * 100)}%`;
                         }
                     } else {
-                        resultHTML = `🤔 Невпевнено. Спробуй чіткіший вираз!`;
+                         resultHTML = `🤔 Невпевнено. Спробуй чіткіший вираз!`;
                     }
                 }
             }
 
-            labelContainer.innerHTML = resultHTML; // Оновлення результату
+            labelContainer.innerHTML = resultHTML; 
         }
     </script>
 
